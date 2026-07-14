@@ -1,76 +1,103 @@
-# 思镜 MindScope · AI Agent 时间旅行调试器
+# 思镜 MindScope
 
-> 人工智能基础（A）综合大作业 · 选题一：AI Agent 框架搭建
-> 一台从零实现、玻璃盒可视化的 AI Agent「时间旅行调试器」——
-> 回到 agent 推理的任意一步、改一行系统提示词、从该步重跑，当场看它走出不同结果。
-> **"提示词即程序"，可交互地演示出来。**
+> **让 AI 的下一句话不再像黑箱。**
+>
+> MindScope 是一个从零实现的 AI Agent 时间旅行调试器，也是一个可以被导演、回看和改写的分支剧场。
 
-## ✨ 功能一览
+多数 Agent 产品只给你最后的回答。MindScope 把一次运行展开成一条可阅读、可追溯、可改写的故事线：你能看见它经历了什么、在哪一步偏离、为什么长出另一条结果，并从那个节点继续演下去。
 
-**核心（选题一硬性要求，全部自写、不用 LangChain/LlamaIndex）**
-- 从零的 ReAct 循环：Thought→Action(JSON)→Observation，JSON 解析容错、最大轮数护栏、上下文管理
-- 6 个工具：计算器、维基搜索、文件读/写（沙箱）、python_exec（隔离）、长期记忆
+## 不是聊天窗口，是一座会生长的剧场
 
-**主角（差异化）**
-- ⏪ **时间旅行调试器**：逐步快照 / 回退 / 改提示词或观察值 / fork 重跑 / 分支树对照 / 分支副作用隔离
+MindScope 的核心体验由三件事组成：
 
-**进阶四项 + 额外**
-- 流式输出 · 短期+长期记忆（**自动召回**，跨会话）· 自定义玻璃盒 Web 界面 · 多 Agent 协作（Planner→Executor→Reflector）
-- 💾 会话持久化：多会话留存 / 列表 / 重新打开 / 历史回放 / 可继续 fork
-- 🛡️ 提示词注入攻防 · 🕵️ 神探破案（DemoModel 确定复现）
+| 你看见什么 | 它解决什么 |
+| --- | --- |
+| **对戏剧场** | 两个 Agent 在同一舞台上交锋；台词、关系、心声与导演干预共同构成一场可观看的演出。 |
+| **世界树** | 每一步都是一个可定位的故事节点。分叉、私语、秘密和当前路径都留在树上，而不是消失在滚动聊天记录里。 |
+| **玻璃盒控制室** | 选中任意节点即可查看提示词、工具调用、观察结果、原始 state 与分支来源；沉浸感不以牺牲可解释性为代价。 |
 
-## 🚀 运行
+你既是观众，也是导演：在一个明确的节点插入旁白、私语、秘密或收束指令，之后的剧情会长出一条可并排比较的新分支。
+
+## 回档不是撤销：让提示词真正成为可调试的程序
+
+MindScope 将每个推理步骤保存为不可变 checkpoint。你可以：
+
+1. 回到任意 Thought / Action / Observation 节点；
+2. 修改该处系统提示词，或修正一次工具返回；
+3. 从这个完整状态 fork 重跑；
+4. 保留旧分支，与新分支并排对照结果和后果。
+
+这不是“重新问一次”。每个分支都隔离工作区、记忆 overlay 与 trace，旧时间线不会被覆盖。你能准确回答：**哪一句规则、哪一次工具结果，导致了后来这一幕。**
+
+## 透明，但不止是日志
+
+MindScope 不是把 JSON 堆在屏幕上。它把可观测性组织成可读的舞台语言：
+
+- **舞台中央**看正在发生的对话与关系变化；
+- **左侧世界树**看路径、分叉和导演干预如何连接；
+- **右侧玻璃盒**按节点展开设置、角色状态、隐藏信息和原始数据；
+- **底部导演台**把干预绑定到明确的位置，随后果负责。
+
+因此，它既能服务答辩演示，也适合教学、提示词实验和对 Agent 行为的真实调试。
+
+## 功能底座
+
+- 自写 ReAct 循环：Thought → Action(JSON) → Observation，含 JSON 容错、上下文管理与最大轮数护栏
+- 6 个工具：计算器、维基搜索、受限文件读写、隔离 `python_exec`、长期记忆等
+- FastAPI + SSE：运行过程逐步流入界面，而非等待最终答案
+- 多 Agent 编排：Planner → Executor → Reflector
+- 会话持久化、历史回放与从历史节点继续 fork
+- 两个确定性演示：提示词注入攻防、神探破案
+
+没有使用 LangChain、LlamaIndex 或其他高层 Agent 框架；循环、工具注册、提示词和 checkpoint 都由本项目实现。
+
+## 快速开始
 
 ```bash
 pip install -r requirements.txt
-cp .env.example .env        # 填入 LLM API key（ModelScope/DeepSeek 等 OpenAI 兼容端点）
+cp .env.example .env  # 填入 OpenAI 兼容端点的 API key
 
-# 单元测试（确定性核心，不需要 key）
+# 确定性核心测试，不需要 API key
 python -m pytest -q
 
-# CLI
-python cli.py "查爱因斯坦活了多少岁"      # 多步任务
-python cli.py --debug                     # 时间旅行闭环演示
-python cli.py --memory                    # 跨会话长期记忆演示
-
-# 玻璃盒 Web 界面（含时间旅行控件 + 演示按钮）
+# 启动剧场与调试器
 python -m uvicorn server:app --port 8770
-# 浏览器打开 http://127.0.0.1:8770/
+# 打开 http://127.0.0.1:8770/
 ```
 
-## 🎮 Web 界面怎么玩
+首次体验建议：运行一次任务，选中世界树中的 checkpoint，在导演台补入一条规则，然后从该处重演。新旧路径会同时留下来。
 
-1. 底部输入任务 → **RUN** → 中间「推理步流」逐步冒出 Thought/Action/Observation，左侧「分支树」长出 checkpoint。
-2. 点左侧任意 **checkpoint** → 右侧「时间旅行」面板亮起，显示那一步的系统提示词。
-3. 在「追加系统规则」框写一条规则（如改语言/加防御）→ **从这步重跑** → 左侧 fork 出新分支，对照两条结果。
-4. 一键演示：**🛡️ 注入攻防**（被劫持泄密 → 加防御重跑 → 识破）、**🕵️ 神探破案**（冤枉好人 → 加严谨规则 → 抓真凶）。
-5. 左上 **SESSIONS** 侧栏：历史会话留存，点击重开/回放。
+## 两个演示入口
 
-## 🔧 .env 配置
+- **提示词注入攻防**：工具返回中藏有恶意指令；第一条时间线被劫持，回档补入防线后，新分支识破注入。演示只使用 dummy 假密钥。
+- **神探破案**：Agent 搜索、计算并读取案件文件；第一次错误归因后，从关键节点补入严谨规则，让新分支走向正确结论。
 
-```
-MODELSCOPE_API_KEY=...                       # 你的令牌
+## 配置
+
+复制 `.env.example` 为 `.env`，再填写实际令牌；`.env` 已被忽略，绝不会提交到仓库。
+
+```env
+MODELSCOPE_API_KEY=...
 MS_BASE_URL=https://api-inference.modelscope.cn/v1
-MS_MODEL=ZhipuAI/GLM-5.1                      # 以模型页"API 调用"显示的为准
+MS_MODEL=ZhipuAI/GLM-5.1
 ```
-（也兼容 DeepSeek：把 base_url/model 换成对应值即可。openai SDK 只是 HTTP 客户端，非 agent 框架。）
 
-## 📁 结构
+也兼容 DeepSeek 等 OpenAI 兼容端点。`openai` SDK 在此仅作为 HTTP 客户端使用，不承担 Agent 框架职责。
 
-```
-core/         引擎：llm / agent / prompt / checkpoint / isolation / timetravel
-tools/        6 工具 + 注册表（含 CSO 沙箱加固）
+## 代码地图
+
+```text
+core/            Agent、checkpoint、分支隔离与时间旅行引擎
+tools/           工具注册表与受限工具实现
+web/             剧场、世界树与玻璃盒前端
+server.py        SSE、时间旅行、分支与会话 API
 orchestrator.py  多 Agent 编排
-server.py     FastAPI + SSE + 时间旅行 API + 会话持久化
-web/          玻璃盒前端（index.html / app.js / live.css）
-demos/        injection / detective（DemoModel 确定复现）
-report/       实验报告草稿
-tests/        单元测试（确定性核心全绿）
-openspec/     需求规范（proposal/design/specs/tasks）
-docs/         施工图   research/  赛道调研
+demos/           可复现的注入攻防与侦探演示
+tests/           确定性核心测试
 ```
 
-## ⚠️ 已知限制（诚实记录）
-- `zh.wikipedia` 国内不可达 → search 优雅降级，演示用 golden trace 兜底
-- python_exec 为**非生产级沙箱**（子进程隔离 + 剥离密钥环境 + 超时），生产化需容器级隔离
-- 真 LLM 非确定性 → money shot 的稳定复现靠 DemoModel/golden trace
+## 已知边界
+
+- 真 LLM 本身具有非确定性；关键演示使用 DemoModel / golden trace 稳定复现。
+- `python_exec` 使用子进程隔离、环境剥离和超时控制，但仍不是生产级容器沙箱。
+- 部分网络环境无法访问中文维基，搜索工具会优雅降级。
