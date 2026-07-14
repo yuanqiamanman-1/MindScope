@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MindScope 思镜 · 世界树</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css?v=3" />
+<style>
+  .tree-stage{ flex:1; min-height:0; position:relative; display:flex; align-items:center; justify-content:center;
+    overflow:hidden; border:1px solid var(--hair); border-radius:var(--radius);
+    background:radial-gradient(900px 700px at 50% 88%, rgba(20,46,40,.5) 0%, rgba(8,16,22,.2) 45%, transparent 75%); }
+  .tree-stage svg{ width:min(1060px,94%); height:auto; }
+  .ww-cap{ position:absolute; top:14px; left:18px; font-size:11px; color:var(--ink-faint); letter-spacing:.04em; line-height:1.6; }
+  .ww-cap b{ color:var(--phos); }
+  .ww-legend{ position:absolute; bottom:14px; left:18px; font-size:11px; color:var(--dim); display:flex; gap:16px; }
+  .ww-legend i{ width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px;box-shadow:0 0 8px currentColor;}
+
+  .limb{ fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .twig{ fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .root{ fill:none; stroke-linecap:round; opacity:.55; }
+  .myc{ fill:none; stroke-linecap:round; filter:url(#glow); }
+  .myc-line{ animation:mglow 4s ease-in-out infinite; }
+  @keyframes mglow{ 0%,100%{ opacity:.18 } 50%{ opacity:.5 } }
+  .sap{ fill:none; stroke-linecap:round; stroke-width:2.2; stroke-dasharray:10 130; filter:url(#glow); animation:flow 2.8s linear infinite; }
+  @keyframes flow{ to{ stroke-dashoffset:-280; } }
+  .s-cyan{stroke:var(--phos);} .s-red{stroke:#ff6b6b;} .s-green{stroke:#7ef0b0;}
+  #crown{ animation:sway 8s ease-in-out infinite; transform-box:view-box; transform-origin:50% 80%; }
+  @keyframes sway{ 0%,100%{transform:rotate(-.7deg)} 50%{transform:rotate(.7deg)} }
+  .halo{ animation:pulse 3s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  @keyframes pulse{ 0%,100%{opacity:.22; transform:scale(.8)} 50%{opacity:.65; transform:scale(1.55)} }
+  .node{ filter:url(#glow); } .fork .halo{animation-duration:2s;} .win .halo{animation-duration:1.5s;}
+  .node circle:not(.halo){ stroke:rgba(0,0,0,.35); stroke-width:.8; }   /* 实心果实 + 暗边压实立体感 */
+  .bad .halo{ animation:flick 1.2s steps(2) infinite; } @keyframes flick{0%,100%{opacity:.6}50%{opacity:.15}}
+  .lbl{ font-size:12px; fill:var(--dim);} .lbl.hot{fill:#f2b24a;} .lbl.bad{fill:#ffb0b0;} .lbl.win{fill:#7ef0b0;}
+  .leaf{ animation:breathe 4s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  .leaf:nth-child(2n){animation-duration:4.8s;} .leaf:nth-child(3n){animation-duration:5.4s;}
+  @keyframes breathe{0%,100%{opacity:.4;transform:scale(.85)}50%{opacity:.95;transform:scale(1.12)}}
+  .spore{ animation:breathe 5s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+</style>
+</head>
+<body>
+<div class="grid-overlay"></div>
+<div class="scanlines"></div>
+
+<div class="console">
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="brand">MINDSCOPE</span><span class="brand-cn">思镜</span>
+      <span class="divider">▎</span>
+      <nav class="tabs">
+        <a class="tab" href="index.html">TIME-TRAVEL DEBUGGER</a>
+        <a class="tab" href="lab.html">PROMPT-INJECTION LAB</a>
+        <a class="tab active">WORLD TREE 世界树</a>
+      </nav>
+    </div>
+    <div class="topbar-center"><span>SESSION&nbsp;<b id="sess">demo</b></span><span>NODES&nbsp;<b>8</b></span></div>
+    <div class="topbar-right"><span class="status-label">YGGDRASIL</span><span class="status-pill"><i class="dot"></i><span>生长中</span></span></div>
+  </header>
+
+  <main class="tree-stage">
+    <div class="ww-cap"><b>世界树</b>：根在下、往上长 · 发光果实=checkpoint<br>点任意节点爬上去接着说（中间节点说＝长新枝）· 登顶=好感满通关</div>
+
+    <svg viewBox="0 0 960 640" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <!-- 树皮纹理：fractal 噪声做位移，把光滑笔画揉成有起伏的树皮 -->
+        <filter id="bark" x="-25%" y="-25%" width="150%" height="150%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.014 0.075" numOctaves="2" seed="11" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="5.5" xChannelSelector="R" yChannelSelector="G" result="d"/>
+          <feGaussianBlur in="d" stdDeviation="0.5"/>
+        </filter>
+        <radialGradient id="gc" cx="36%" cy="30%" r="72%"><stop offset="0%" stop-color="#d8fbf8"/><stop offset="42%" stop-color="#34b0a9"/><stop offset="100%" stop-color="#093230"/></radialGradient>
+        <radialGradient id="ga" cx="36%" cy="30%" r="72%"><stop offset="0%" stop-color="#ffeec2"/><stop offset="42%" stop-color="#d6962a"/><stop offset="100%" stop-color="#3f2806"/></radialGradient>
+        <radialGradient id="gr" cx="36%" cy="30%" r="72%"><stop offset="0%" stop-color="#ffd0d0"/><stop offset="42%" stop-color="#d54b4b"/><stop offset="100%" stop-color="#4e1212"/></radialGradient>
+        <radialGradient id="gg" cx="36%" cy="30%" r="72%"><stop offset="0%" stop-color="#d8f6e6"/><stop offset="42%" stop-color="#41ad77"/><stop offset="100%" stop-color="#0e3a26"/></radialGradient>
+        <linearGradient id="barkC" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#33564d"/><stop offset="55%" stop-color="#244a44"/><stop offset="100%" stop-color="#1b3836"/></linearGradient>
+        <linearGradient id="barkG" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#264c3c"/><stop offset="100%" stop-color="#326048"/></linearGradient>
+        <linearGradient id="barkR" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#3c2b2d"/><stop offset="100%" stop-color="#4e3032"/></linearGradient>
+      </defs>
+
+      <!-- 根部光晕 -->
+      <ellipse cx="470" cy="600" rx="190" ry="30" fill="#10322c" opacity=".4" filter="url(#glow)"/>
+
+      <!-- ===== 根部发光菌丝网络 ===== -->
+      <g class="myc" stroke="#4fe6e0">
+        <g class="myc-line" style="stroke-width:1.1">
+          <path d="M470,575 C430,592 380,596 332,612 C312,618 296,616 280,624"/>
+          <path d="M332,612 C320,602 300,604 286,596"/>
+          <path d="M470,575 C512,592 566,596 612,612 C634,618 652,616 670,626"/>
+          <path d="M612,612 C624,600 646,602 660,592"/>
+          <path d="M470,575 C462,596 448,608 430,624"/>
+          <path d="M470,575 C480,596 498,606 516,624"/>
+        </g>
+        <g class="myc-line" style="stroke-width:.7; animation-delay:1.3s" stroke="#7ef0b0">
+          <path d="M400,600 C384,610 372,608 356,620"/>
+          <path d="M540,600 C556,610 568,608 584,620"/>
+          <path d="M470,575 C470,600 470,612 470,628"/>
+        </g>
+        <!-- 孢子光点 -->
+        <g fill="#7ef0b0">
+          <circle class="spore" cx="280" cy="624" r="1.8"/><circle class="spore" cx="670" cy="626" r="1.8"/>
+          <circle class="spore" cx="356" cy="620" r="1.5"/><circle class="spore" cx="584" cy="620" r="1.5"/>
+          <circle class="spore" cx="470" cy="628" r="1.6"/><circle class="spore" cx="430" cy="624" r="1.3"/><circle class="spore" cx="516" cy="624" r="1.3"/>
+        </g>
+      </g>
+
+      <!-- ===== 树根 ===== -->
+      <g class="root" stroke="url(#barkC)" filter="url(#bark)">
+        <path style="stroke-width:9" d="M470,572 C436,588 392,594 350,614"/>
+        <path style="stroke-width:8" d="M470,572 C452,592 436,602 416,622"/>
+        <path style="stroke-width:9" d="M470,572 C508,588 556,594 600,614"/>
+        <path style="stroke-width:7" d="M470,572 C486,594 502,604 520,624"/>
+      </g>
+
+      <g id="crown">
+        <!-- ===== 主枝桠（树皮纹理 bark 滤镜） ===== -->
+        <g class="limb" filter="url(#bark)">
+          <path stroke="url(#barkC)" style="stroke-width:25" d="M470,572 C472,530 470,500 470,468"/>
+          <path stroke="url(#barkC)" style="stroke-width:20" d="M470,468 C470,448 469,430 470,414"/>
+          <path stroke="url(#barkC)" style="stroke-width:12" d="M470,414 C470,376 469,340 470,310"/>
+          <path stroke="url(#barkC)" style="stroke-width:8" d="M470,310 C470,290 469,276 470,264"/>
+          <!-- 左枯枝 -->
+          <path stroke="url(#barkR)" style="stroke-width:13" d="M470,414 C428,396 340,386 290,338"/>
+          <path stroke="url(#barkR)" style="stroke-width:8.5" d="M290,338 C262,314 240,290 222,262"/>
+          <path stroke="url(#barkR)" style="stroke-width:5" d="M222,262 C208,234 198,208 192,182"/>
+          <!-- 右茂枝 -->
+          <path stroke="url(#barkG)" style="stroke-width:16" d="M470,414 C546,396 632,364 678,316"/>
+          <path stroke="url(#barkG)" style="stroke-width:11.5" d="M678,316 C710,286 726,258 738,230"/>
+          <path stroke="url(#barkG)" style="stroke-width:8" d="M738,230 C752,202 762,174 770,146"/>
+          <path stroke="url(#barkG)" style="stroke-width:5" d="M770,146 C776,122 782,102 788,82"/>
+        </g>
+        <!-- 小枝桠 -->
+        <g class="twig" filter="url(#bark)">
+          <path stroke="url(#barkG)" style="stroke-width:4.5" d="M678,316 C648,304 624,282 620,250"/>
+          <path stroke="url(#barkG)" style="stroke-width:2.6" d="M620,250 C612,232 614,216 606,200"/>
+          <path stroke="url(#barkG)" style="stroke-width:4" d="M738,230 C766,228 788,210 798,184"/>
+          <path stroke="url(#barkG)" style="stroke-width:2.4" d="M798,184 C812,182 824,172 828,154"/>
+          <path stroke="url(#barkG)" style="stroke-width:3.4" d="M770,146 C748,136 730,138 712,122"/>
+          <path stroke="url(#barkG)" style="stroke-width:3.2" d="M788,82 C812,78 832,84 848,70"/>
+          <path stroke="url(#barkG)" style="stroke-width:2.6" d="M678,316 C700,300 700,276 716,260"/>
+          <path stroke="url(#barkC)" style="stroke-width:3.6" d="M470,310 C500,302 520,284 524,258"/>
+          <path stroke="url(#barkC)" style="stroke-width:3" d="M470,264 C446,254 432,258 416,244"/>
+          <path stroke="url(#barkC)" style="stroke-width:3.2" d="M470,468 C440,460 420,444 416,420"/>
+          <path stroke="url(#barkR)" style="stroke-width:3" opacity=".5" d="M290,338 C312,319 318,297 312,271"/>
+          <path stroke="url(#barkR)" style="stroke-width:2.4" opacity=".4" d="M222,262 C204,246 192,248 176,234"/>
+        </g>
+
+        <!-- 树汁流光 -->
+        <path id="sTrunk" class="sap s-cyan" d="M470,572 C472,530 470,500 470,468 C470,448 469,430 470,414 C470,376 469,340 470,310 C470,290 469,276 470,264"/>
+        <path id="sRed" class="sap s-red" style="animation-delay:.6s" d="M470,414 C428,396 340,386 290,338 C262,314 240,290 222,262 C208,234 198,208 192,182"/>
+        <path id="sGreen" class="sap s-green" style="animation-delay:1.1s" d="M470,414 C546,396 632,364 678,316 C710,286 726,258 738,230 C752,202 762,174 770,146 C776,122 782,102 788,82"/>
+        <circle r="3.6" fill="url(#gc)" filter="url(#glow)"><animateMotion dur="3s" repeatCount="indefinite"><mpath href="#sTrunk"/></animateMotion></circle>
+        <circle r="3.2" fill="url(#gr)" filter="url(#glow)"><animateMotion dur="3.4s" repeatCount="indefinite"><mpath href="#sRed"/></animateMotion></circle>
+        <circle r="4" fill="url(#gg)" filter="url(#glow)"><animateMotion dur="3.2s" repeatCount="indefinite"><mpath href="#sGreen"/></animateMotion></circle>
+
+        <!-- 叶簇 -->
+        <g fill="url(#gg)" filter="url(#glow)">
+          <circle class="leaf" cx="606" cy="200" r="3"/><circle class="leaf" cx="828" cy="154" r="2.8"/><circle class="leaf" cx="848" cy="70" r="2.6"/>
+          <circle class="leaf" cx="712" cy="122" r="2.6"/><circle class="leaf" cx="716" cy="260" r="2.6"/><circle class="leaf" cx="524" cy="258" r="2.4"/>
+          <circle class="leaf" cx="798" cy="184" r="2.4"/><circle class="leaf" cx="788" cy="104" r="3"/><circle class="leaf" cx="760" cy="162" r="2.4"/>
+          <circle class="leaf" cx="640" cy="226" r="2.2"/><circle class="leaf" cx="822" cy="124" r="2.2"/><circle class="leaf" cx="700" cy="204" r="2.2"/>
+        </g>
+
+        <!-- 果实节点 -->
+        <g class="node"><circle class="halo" cx="470" cy="572" r="11" fill="#4fe6e0"/><circle cx="470" cy="572" r="7" fill="url(#gc)"/></g>
+        <text class="lbl" x="490" y="576">cp0 · 开场白（根）</text>
+        <g class="node fork"><circle class="halo" cx="470" cy="414" r="14" fill="#f2b24a"/><circle cx="470" cy="414" r="8.5" fill="url(#ga)"/></g>
+        <text class="lbl hot" x="492" y="418">cp1 · 聊第一句 ◇分叉</text>
+        <g class="node"><circle class="halo" cx="470" cy="264" r="10" fill="#4fe6e0"/><circle cx="470" cy="264" r="6.5" fill="url(#gc)"/></g>
+        <text class="lbl" x="490" y="268">cp2 · 主线继续…</text>
+        <g class="node"><circle class="halo" cx="290" cy="338" r="9" fill="#4fe6e0"/><circle cx="290" cy="338" r="6" fill="url(#gc)"/></g>
+        <text class="lbl" x="196" y="334">cp3 · 换个话题</text>
+        <g class="node bad"><circle class="halo" cx="192" cy="182" r="13" fill="#ff6b6b"/><circle cx="192" cy="182" r="8" fill="url(#gr)"/></g>
+        <text class="lbl bad" x="66" y="186">cp4 · ⚠ 踩红线枯死</text>
+        <g class="node"><circle class="halo" cx="678" cy="316" r="10" fill="#4fe6e0"/><circle cx="678" cy="316" r="6.5" fill="url(#gc)"/></g>
+        <text class="lbl" x="698" y="320">cp5 · 夸她的画</text>
+        <g class="node"><circle class="halo" cx="738" cy="230" r="10" fill="#4fe6e0"/><circle cx="738" cy="230" r="6.5" fill="url(#gc)"/></g>
+        <text class="lbl" x="758" y="234">cp6 · 约她周末</text>
+        <g class="node win"><circle class="halo" cx="788" cy="82" r="16" fill="#7ef0b0"/><circle cx="788" cy="82" r="9.5" fill="url(#gg)"/></g>
+        <text class="lbl win" x="626" y="70">🏆 好感满 · 登顶通关</text>
+      </g>
+    </svg>
+
+    <div class="ww-legend">
+      <span style="color:#4fe6e0"><i></i>果实节点</span>
+      <span style="color:#f2b24a"><i></i>分叉点</span>
+      <span style="color:#ff6b6b"><i></i>枯枝 BROKEN</span>
+      <span style="color:#7ef0b0"><i></i>登顶通关</span>
+      <span style="color:var(--ink-faint)">— 根部发光菌丝 · 树皮纹理</span>
+    </div>
+  </main>
+
+  <div class="statusbar">
+    <span>VIEW&nbsp;<b class="ok">世界树 / Yggdrasil</b></span>
+    <span>NODES&nbsp;<b>8</b></span>
+    <span>BRANCHES&nbsp;<b>3</b></span>
+    <span>MODE&nbsp;<b class="ok">MOCKUP</b></span>
+  </div>
+</div>
+</body>
+</html>

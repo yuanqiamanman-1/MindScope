@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MindScope 思镜 · Tool Call</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="grid-overlay"></div>
+<div class="scanlines"></div>
+
+<div class="console">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="brand">MINDSCOPE</span>
+      <span class="brand-cn">思镜</span>
+      <span class="divider">▎</span>
+      <nav class="tabs">
+        <a href="index.html" class="tab">OBSERVATORY</a>
+        <a href="multi-agent.html" class="tab">MULTI-AGENT</a>
+        <a href="tool-call.html" class="tab active">TOOL&nbsp;CALL</a>
+      </nav>
+    </div>
+    <div class="topbar-center">
+      <span>CALL&nbsp;<b>#0x1f3a</b></span>
+      <span>AGENT&nbsp;<b>ResearchAgent</b></span>
+      <span>ENV&nbsp;<b>prod</b></span>
+    </div>
+    <div class="topbar-right">
+      <span class="status-label">STATUS</span>
+      <span class="status-pill" id="status-pill"><i class="dot"></i><span id="status-text">IDLE</span></span>
+    </div>
+  </header>
+
+  <main class="tc-layout">
+
+    <!-- left tool list -->
+    <aside class="panel tool-list">
+      <div class="tl-agent">ResearchAgent</div>
+      <div class="tl-sub">REGISTERED&nbsp;TOOLS&nbsp;·&nbsp;6</div>
+      <div class="tl-item active"><span>web.search</span><span class="cost">~310 tok</span></div>
+      <div class="tl-item"><span>calculator</span><span class="cost">~40 tok</span></div>
+      <div class="tl-item"><span>python.exec</span><span class="cost">~620 tok</span></div>
+      <div class="tl-item"><span>file.write</span><span class="cost">~80 tok</span></div>
+      <div class="tl-item"><span>course.query</span><span class="cost">~210 tok</span></div>
+      <div class="tl-item"><span>memory.recall</span><span class="cost">~95 tok</span></div>
+      <button id="rerun" class="submit" style="width:100%;margin-top:14px;">[ RE-RUN CALL ]</button>
+    </aside>
+
+    <!-- center card -->
+    <section class="panel tc-card">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+
+      <div class="tc-title">
+        <h2>tool.call:&nbsp;<span class="ns">web.</span><span class="fn">search</span></h2>
+        <span class="tc-chip pending" id="chip"><i class="d">●</i>&nbsp;<span id="chip-text">PENDING</span></span>
+      </div>
+
+      <div class="tc-section">
+        <div class="sh">INPUT&nbsp;PARAMETERS</div>
+        <div class="code-block">{
+  <span class="k">"query"</span>: <span class="s">"Einstein birth year death year"</span>,
+  <span class="k">"count"</span>: <span class="n">5</span>,
+  <span class="k">"lang"</span>: <span class="s">"en"</span>,
+  <span class="k">"source"</span>: <span class="s">"wikipedia"</span>
+}</div>
+      </div>
+
+      <div class="tc-section">
+        <div class="sh">EXECUTION&nbsp;STATUS</div>
+        <div class="exec-bar"><i id="exec-fill"></i></div>
+        <div class="exec-stages">
+          <span id="stg-pending">● PENDING</span>
+          <span id="stg-exec">● EXECUTING</span>
+          <span id="stg-done">● COMPLETE</span>
+        </div>
+      </div>
+
+      <div class="tc-section" style="flex:1;">
+        <div class="sh">OUTPUT&nbsp;RESULTS&nbsp;<span id="res-count" class="panel-sub"></span></div>
+        <table class="tc-table">
+          <thead><tr><th style="width:34px">#</th><th>TITLE</th><th style="width:120px">SOURCE</th><th style="width:64px">SCORE</th></tr></thead>
+          <tbody id="res-body"></tbody>
+        </table>
+      </div>
+
+      <div class="tc-foot">
+        <div><div class="fl">LATENCY</div><div class="fv" id="f-lat">— ms</div></div>
+        <div><div class="fl">TOKENS</div><div class="fv" id="f-tok">—</div></div>
+        <div><div class="fl">TOKEN&nbsp;COST</div><div class="fv" id="f-cost">—</div></div>
+        <div><div class="fl">TIMESTAMP</div><div class="fv" id="f-ts">—</div></div>
+        <div><div class="fl">MODEL</div><div class="fv">deepseek-chat</div></div>
+      </div>
+    </section>
+
+    <!-- right gauges -->
+    <aside class="tc-gauges">
+      <div class="panel mini-meter">
+        <div class="mh"><span>TOKEN&nbsp;USAGE</span><b id="g-tok">0%</b></div>
+        <div class="meter-track"><i id="g-tok-fill" style="width:0%"></i></div>
+      </div>
+      <div class="panel mini-meter">
+        <div class="mh"><span>MEMORY</span><b id="g-mem">38%</b></div>
+        <div class="meter-track"><i style="width:38%"></i></div>
+      </div>
+      <div class="panel mini-meter">
+        <div class="mh"><span>CONTEXT&nbsp;WINDOW</span><b id="g-ctx">5%</b></div>
+        <div class="meter-track"><i id="g-ctx-fill" style="width:5%"></i></div>
+      </div>
+      <div class="panel">
+        <div class="mh" style="margin-bottom:4px;"><span style="color:var(--ink-faint);font-size:10px;letter-spacing:.1em">SYSTEM&nbsp;RESOURCES</span></div>
+        <div class="spark" id="spark"></div>
+      </div>
+    </aside>
+
+  </main>
+
+  <div class="statusbar">
+    <span>TOOL&nbsp;REGISTRY&nbsp;<b class="ok">LOADED</b></span>
+    <span>SANDBOX&nbsp;<b class="ok">ON</b></span>
+    <span>RETRIES&nbsp;<b>0 / 2</b></span>
+    <span>TIMEOUT&nbsp;<b>8000 ms</b></span>
+    <span>JSON&nbsp;PARSE&nbsp;<b class="ok">OK</b></span>
+  </div>
+
+</div>
+
+<script src="tool-call.js"></script>
+</body>
+</html>

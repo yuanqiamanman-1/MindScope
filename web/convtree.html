@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MindScope 思镜 · 对话世界树</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css?v=3" />
+<style>
+  .ct-layout{ flex:1; min-height:0; display:grid; grid-template-columns:0.85fr 1.25fr; gap:12px;
+    grid-template-rows:minmax(0,1fr); overflow:hidden; }
+  .ct-tree, .ct-right{ display:flex; flex-direction:column; min-height:0; overflow:hidden; }
+  #wt-tree{ flex:1; min-height:0; overflow:auto; position:relative;
+    background:radial-gradient(640px 560px at 50% 86%, rgba(20,46,40,.4) 0%, transparent 70%); }
+  #wt-tree svg{ width:100%; height:auto; display:block; }
+  #wt-tree .wtbreath{ transform-box:fill-box; transform-origin:center; animation:wtbreath 3.6s ease-in-out infinite; }
+  @keyframes wtbreath{ 0%,100%{ transform:scale(.86) } 50%{ transform:scale(1.2) } }
+  .ct-hint{ padding:6px 12px; font-size:10px; color:var(--ink-faint); border-top:1px solid var(--hair); line-height:1.5; }
+  .ct-hint b{ color:var(--phos); }
+  .ct-empty{ color:var(--ink-faint); font-size:12px; padding:24px 14px; line-height:1.7; }
+
+  .gstream{ flex:1; min-height:0; overflow:auto; padding:12px 14px; }
+  .guser{ background:rgba(79,230,224,.08); border:1px solid rgba(79,230,224,.3); border-radius:8px; border-bottom-right-radius:3px;
+    padding:7px 11px; font-size:12.5px; color:var(--ink); margin:8px 0 8px auto; max-width:82%; width:fit-content; }
+  .gturn{ font-size:9.5px; letter-spacing:.14em; color:var(--ink-faint); margin:12px 0 6px; }
+  .grule{ background:rgba(242,178,74,.08); border:1px solid rgba(242,178,74,.4); border-left-width:3px; border-radius:6px;
+    padding:6px 11px; font-size:11.5px; color:var(--ink-dim); margin:8px 0; line-height:1.5; }
+  .grule b{ color:var(--amber); }
+  .gstep{ border:1px solid var(--hair); border-radius:4px; overflow:hidden; margin-bottom:9px; }
+  .gstep.final{ border-color:rgba(79,230,224,.45); box-shadow:0 0 12px var(--phos-soft); }
+  .grow{ display:flex; gap:9px; padding:6px 11px; font-size:12px; border-top:1px dotted var(--hair); }
+  .grow:first-child{ border-top:0; }
+  .grow .k{ flex:0 0 64px; font-size:9px; letter-spacing:.1em; padding-top:2px; }
+  .grow.t .k{ color:var(--phos);} .grow.ac .k{ color:var(--amber);} .grow.ob .k{ color:var(--cobalt);} .grow.f .k{ color:var(--phos);}
+  .grow .v{ flex:1; color:var(--ink); white-space:pre-wrap; word-break:break-word; }
+  .grow .v.mono{ color:var(--ink-dim); font-size:11.5px; }
+  .gstep.final .grow.f .v{ color:var(--phos); }
+
+  .ttstrip{ border-top:1px solid var(--hair); background:linear-gradient(180deg,var(--panel-2),var(--panel)); padding:9px 13px; }
+  .ttstrip .tth{ color:var(--amber); font-size:10px; letter-spacing:.1em; margin-bottom:6px; }
+  .ttstrip .tthsub{ color:var(--ink-faint); letter-spacing:0; } .ttstrip .tthsub b{ color:var(--amber); }
+  .ct-inlabel{ font-size:10px; color:var(--phos); letter-spacing:.04em; padding:0 14px 6px; }
+  .ttedit{ display:flex; gap:8px; }
+  .ttedit input{ flex:1; background:#04070d; border:1px solid var(--hair-2); border-radius:3px; color:var(--ink); font-family:var(--mono); font-size:11.5px; padding:7px 10px; outline:0; }
+  .ttedit input:focus{ border-color:var(--phos); }
+  .ttedit button{ background:rgba(242,178,74,.08); border:1px solid rgba(242,178,74,.55); color:var(--amber); font-size:11px; padding:7px 12px; border-radius:3px; cursor:pointer; white-space:nowrap; }
+  #wt-at{ font-size:10.5px; color:var(--ink-faint); padding:0 14px 8px; } #wt-at b{ color:var(--amber); }
+  .ct-input{ display:flex; align-items:center; gap:10px; padding:11px 14px; border-top:1px solid var(--hair); background:var(--panel); }
+  .ct-input .glyph{ color:var(--phos); font-size:15px; }
+  .ct-input input{ flex:1; background:#04070d; border:1px solid var(--hair-2); border-radius:4px; color:var(--ink); font-family:var(--mono); font-size:13px; padding:10px 13px; outline:0; }
+  .ct-input input:focus{ border-color:var(--phos); box-shadow:0 0 14px var(--phos-soft); }
+  .ct-input button{ background:rgba(79,230,224,.06); border:1px solid var(--phos); color:var(--phos); font-family:var(--mono); font-size:12px; letter-spacing:.1em; padding:9px 16px; border-radius:3px; cursor:pointer; }
+  .wt-newbtn{ background:rgba(79,230,224,.08); border:1px solid var(--phos); color:var(--phos); font-family:var(--mono);
+    font-size:11px; letter-spacing:.06em; padding:5px 12px; border-radius:3px; cursor:pointer; }
+  .wt-newbtn:hover{ background:rgba(79,230,224,.16); box-shadow:0 0 12px var(--phos-soft); }
+  .ct-input.newmode input{ border-color:var(--amber); }
+  .ct-input.newmode button{ border-color:var(--amber); color:var(--amber); background:rgba(242,178,74,.08); }
+</style>
+</head>
+<body>
+<div class="grid-overlay"></div><div class="scanlines"></div>
+<div class="console">
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="brand">MINDSCOPE</span><span class="brand-cn">思镜</span><span class="divider">▎</span>
+      <nav class="tabs">
+        <a class="tab" href="index.html">TIME-TRAVEL 调试器</a>
+        <a class="tab active">WORLD TREE 世界树</a>
+        <a class="tab" href="forest.html">FOREST 森林</a>
+        <a class="tab" href="lab.html">PROMPT-INJECTION LAB</a>
+        <a class="tab" href="galgame.html">🌸 攻略镜</a>
+        <a class="tab" href="duo.html">🎭 对戏</a>
+      </nav>
+    </div>
+    <div class="topbar-center"><button id="wt-new" class="wt-newbtn">＋ 新对话（种一棵新树）</button><span>SESSION&nbsp;<b id="wt-sess">—</b></span><span>MODEL&nbsp;<b id="wt-model">…</b></span></div>
+    <div class="topbar-right"><span class="status-label">提示词即程序</span><span class="status-pill"><i class="dot"></i><span>玻璃盒 · 可时间旅行</span></span></div>
+  </header>
+
+  <main class="ct-layout">
+    <section class="panel ct-tree">
+      <div class="corner tl"></div><div class="corner br"></div>
+      <div class="panel-head sm"><span>对话世界树</span><span class="panel-sub">节点=每步 · 高亮=当前路径</span></div>
+      <div id="wt-tree"><div class="ct-empty">加载中…</div></div>
+      <div class="ct-hint"><b>点任意节点</b>＝爬到那一步看推理；<b>在末端续</b>＝延长本枝；<b>在中间节点续</b>＝自动分叉新枝。</div>
+    </section>
+
+    <section class="panel ct-right">
+      <div class="corner tr"></div><div class="corner bl"></div>
+      <div class="panel-head"><span>玻璃盒 · 当前路径的真实推理</span><span class="panel-sub">看得见 思考-行动-观察</span></div>
+      <div id="wt-glass" class="gstream"></div>
+      <div class="ttstrip">
+        <div class="tth">⚙ 改程序重跑（提示词即程序）· <span class="tthsub">不是你说话——改 agent 这一步的<b>系统规则</b>后重跑同一步，必然分叉新枝。对比"规则改了行为变不变"</span></div>
+        <div class="ttedit">
+          <input id="wt-rule" type="text" placeholder="追加一条系统规则（例：回答更简洁；或注入防御规则）" />
+          <button id="wt-fork">⚙ 改规则重跑 → 分叉</button>
+        </div>
+      </div>
+      <div id="wt-at">📍 选中 —</div>
+      <div class="ct-inlabel">💬 你说话（续聊）· 末端=延长本枝，中间节点=自动分叉新枝</div>
+      <div class="ct-input">
+        <span class="glyph">»</span>
+        <input id="wt-input" type="text" placeholder="继续对话…（在选中节点接着说）" />
+        <button id="wt-send">发送</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="statusbar">
+    <span>VIEW&nbsp;<b class="ok">对话世界树</b></span>
+    <span>玻璃盒&nbsp;<b class="ok">思考-行动-观察</b></span>
+    <span>时间旅行&nbsp;<b class="ok">任意节点改提示词分叉</b></span>
+    <span>DATA&nbsp;<b class="ok">真实 checkpoint</b></span>
+  </div>
+</div>
+<script src="tree-layout.js?v=4"></script>
+<script src="worldtree-app.js?v=9"></script>
+</body>
+</html>

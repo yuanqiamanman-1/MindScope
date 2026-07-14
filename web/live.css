@@ -1,0 +1,134 @@
+/* 思镜 · 时间旅行调试器 真 UI 布局（复用 style.css 的仪器风 token） */
+
+[hidden]{ display:none !important; }   /* 类选择器的 display 会盖过 hidden 属性，这里兜底 */
+
+.tt-layout{
+  flex:1; min-height:0;
+  display:grid; grid-template-columns:260px 1fr 320px; gap:12px;
+  grid-template-rows:minmax(0,1fr);   /* 行高钳到容器高度(可缩到0)，否则 auto 行会被内容撑高→整栏溢出盖住 footer */
+  overflow:hidden;                    /* 兜底：任何网格溢出都裁掉，不外溢到 footer 区 */
+}
+.tt-rail, .tt-edit{ display:flex; flex-direction:column; min-height:0; overflow:hidden; }
+/* min-height:0 + overflow:hidden 让左右栏被网格单元钳定高度，内部子区(.sessions/.branches)
+   才会各自滚动；否则会话/分支一多就撑高溢出、向下盖住 footer 的 RUN 按钮(已修) */
+.tt-stream{ display:flex; flex-direction:column; min-height:0; }
+
+/* —— 分支树 —— */
+.branches{ flex:1; min-height:0; overflow:auto; }
+.branch{ margin-bottom:14px; }
+.branch-head{
+  display:flex; align-items:center; gap:8px; padding:5px 0;
+  color:var(--cobalt); font-size:11px; letter-spacing:.16em;
+}
+.branch-head .bdot{ width:8px; height:8px; border-radius:50%; background:var(--cobalt); box-shadow:0 0 8px var(--cobalt); }
+.branch.active .branch-head{ color:var(--phos); }
+.branch.active .bdot{ background:var(--phos); box-shadow:0 0 10px var(--phos); }
+.cp{
+  display:block; width:100%; text-align:left; cursor:pointer;
+  padding:7px 9px; margin:4px 0 4px 10px;
+  background:var(--panel-2); border:1px solid var(--hair); border-left:2px solid var(--cobalt-lo);
+  border-radius:2px; color:var(--ink-dim); font-family:var(--mono); font-size:10.5px; line-height:1.45;
+  transition:.15s;
+}
+.cp:hover{ border-color:var(--hair-2); color:var(--ink); }
+.cp.sel{ border-color:var(--phos); border-left-color:var(--phos); box-shadow:0 0 12px var(--phos-soft); color:var(--phos); }
+.cp .cp-id{ color:var(--ink-faint); }
+.cp .cp-final{ color:var(--phos); }
+
+/* —— 推理步流 —— */
+.stream{ flex:1; min-height:0; overflow:auto; padding-right:4px; }
+.stream-empty,.edit-empty{ color:var(--ink-faint); font-size:12px; padding:18px 6px; line-height:1.7; }
+.step{ margin-bottom:12px; border:1px solid var(--hair); border-radius:3px; overflow:hidden; animation:rowin .35s ease; }
+.step-head{ display:flex; justify-content:space-between; padding:6px 11px; background:var(--panel-2);
+  color:var(--ink-faint); font-size:9.5px; letter-spacing:.16em; }
+.step-row{ display:flex; gap:9px; padding:8px 11px; font-size:12px; border-top:1px dotted var(--hair); }
+.step-row .k{ flex:0 0 86px; letter-spacing:.12em; font-size:10px; padding-top:2px; }
+.step-row.thought .k{ color:var(--phos); }
+.step-row.action .k{ color:var(--amber); }
+.step-row.obs .k{ color:var(--cobalt); }
+.step-row .v{ flex:1; color:var(--ink); white-space:pre-wrap; word-break:break-word; }
+.step-row .v.mono{ color:var(--ink-dim); }
+.step.final{ border-color:rgba(79,230,224,.5); box-shadow:0 0 18px var(--phos-soft); }
+.step.final .v{ color:var(--phos); }
+.step-row.raw .k{ color:var(--ink-faint); }
+.step-row.raw .v{ color:var(--ink-faint); }   /* 原始 token 流（解析成功后会被结构化行替换） */
+.step.role .s-tag{ color:var(--amber); font-weight:700; }   /* 多 Agent 角色徽章 */
+.step.role{ border-left:2px solid rgba(242,178,74,.4); }
+.step-row.reflect .k{ color:var(--cobalt); }
+/* 用户那一轮（人类发言）：右对齐青色气泡，区别于 agent 的推理卡 */
+.userturn{ margin:6px 0 12px auto; max-width:82%; width:fit-content; padding:7px 12px; font-size:12.5px;
+  color:var(--ink); background:rgba(79,230,224,.08); border:1px solid rgba(79,230,224,.3);
+  border-radius:9px; border-bottom-right-radius:3px; white-space:pre-wrap; word-break:break-word; animation:rowin .35s ease; }
+.userturn::before{ content:'你 ▎'; color:var(--phos); font-size:9.5px; letter-spacing:.1em; }
+/* 时间旅行追加的系统规则（橙色，提示词即程序）：哪怕模型无视它，也看得见规则确实加了 */
+.ruleturn{ margin:6px 0 10px; padding:6px 11px; font-size:11.5px; color:var(--ink-dim); line-height:1.5;
+  background:rgba(242,178,74,.08); border:1px solid rgba(242,178,74,.4); border-left-width:3px; border-radius:6px;
+  white-space:pre-wrap; word-break:break-word; animation:rowin .35s ease; }
+
+/* —— 并排分支对照(4.10) —— */
+.compare{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.cmp-col{ border:1px solid var(--hair); border-radius:3px; overflow:hidden; }
+.cmp-head{ padding:6px 10px; background:var(--panel-2); color:var(--phos); font-size:10px; letter-spacing:.16em; border-bottom:1px solid var(--hair); }
+.cmp-step{ padding:8px 10px; border-bottom:1px dotted var(--hair); font-size:11px; line-height:1.5; }
+.cmp-tag{ color:var(--ink-faint); font-size:9px; margin-bottom:4px; }
+.cmp-t{ color:var(--ink); }
+.cmp-a{ color:var(--amber); }
+.cmp-o{ color:var(--cobalt); }
+.cmp-f{ color:var(--phos); }
+.cmp-user{ color:var(--phos); font-size:11px; margin:4px 0 6px; padding:5px 8px; background:rgba(79,230,224,.07);
+  border:1px solid rgba(79,230,224,.25); border-radius:6px; line-height:1.5; }
+.cmp-rule{ color:var(--amber); font-size:10.5px; margin:4px 0 6px; padding:5px 8px; background:rgba(242,178,74,.07);
+  border:1px solid rgba(242,178,74,.3); border-radius:6px; line-height:1.5; }
+.caret{ color:var(--phos); animation:blink 1s steps(1) infinite; }
+
+/* —— 时间旅行编辑面板 —— */
+.edit-body{ flex:1; display:flex; flex-direction:column; gap:12px; min-height:0; overflow:auto; }
+.edit-row{ display:flex; justify-content:space-between; font-size:11px; color:var(--ink-faint); }
+.edit-row b{ color:var(--phos); }
+.edit-field label{ display:block; color:var(--ink-faint); font-size:10px; letter-spacing:.1em; margin-bottom:5px; }
+.edit-system{
+  background:#04070d; border:1px solid var(--hair); border-radius:2px; padding:9px;
+  color:var(--ink-dim); font-size:10.5px; line-height:1.5; max-height:130px; overflow:auto; white-space:pre-wrap;
+}
+.edit-field textarea, .edit-field input{
+  width:100%; background:#04070d; border:1px solid var(--hair); border-radius:2px;
+  color:var(--ink); font-family:var(--mono); font-size:12px; padding:8px; resize:vertical;
+}
+.edit-field textarea:focus, .edit-field input:focus{ outline:0; border-color:var(--phos); }
+
+.rail-foot{ color:var(--ink-faint); font-size:9.5px; text-align:center; padding-top:8px; letter-spacing:.08em; }
+
+/* —— 会话侧栏 —— */
+.mini-btn{
+  background:rgba(79,230,224,.06); border:1px solid var(--phos); color:var(--phos);
+  font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; padding:3px 8px;
+  border-radius:2px; cursor:pointer;
+}
+.mini-btn:hover{ background:rgba(79,230,224,.14); }
+.sessions{ max-height:34%; overflow:auto; margin-bottom:6px; }
+.sess-empty{ color:var(--ink-faint); font-size:10px; padding:8px 4px; }
+.session{
+  display:block; width:100%; text-align:left; cursor:pointer;
+  padding:7px 9px; margin:4px 0; background:var(--panel-2);
+  border:1px solid var(--hair); border-radius:2px; color:var(--ink-dim); transition:.15s;
+}
+.session:hover{ border-color:var(--hair-2); color:var(--ink); }
+.session.active{ border-color:var(--phos); box-shadow:0 0 12px var(--phos-soft); }
+.session .s-task{ font-size:11px; color:var(--ink); margin-bottom:3px; }
+.session.active .s-task{ color:var(--phos); }
+.session .s-meta{ font-size:9px; color:var(--ink-faint); letter-spacing:.04em; }
+.rail-sep{ height:1px; background:var(--hair); margin:8px 0; }
+
+/* —— 演示按钮 —— */
+.demo-btn{
+  background:rgba(242,178,74,.06); border:1px solid rgba(242,178,74,.5); color:var(--amber);
+  font-family:var(--mono); font-size:11px; padding:7px 12px; border-radius:2px; cursor:pointer;
+  white-space:nowrap; transition:.15s;
+}
+.demo-btn:hover{ background:rgba(242,178,74,.16); box-shadow:0 0 12px rgba(242,178,74,.15); }
+.branches{ max-height:none; }
+
+@media (max-width:1100px){
+  .tt-layout{ grid-template-columns:1fr; }
+  .tt-rail,.tt-edit{ max-height:200px; }
+}

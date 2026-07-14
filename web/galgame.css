@@ -1,0 +1,66 @@
+/* galgame《攻略「镜」》皮肤 —— 复用思镜终端美学 + 玫瑰色好感度暖调 */
+:root{ --rose:#ff7eb6; --rose-soft:rgba(255,126,182,.14); --warm:#ffd27e; }
+
+.gg-layout{ flex:1; min-height:0; display:grid; grid-template-columns:0.92fr 1.18fr; gap:12px;
+  grid-template-rows:minmax(0,1fr); overflow:hidden; }
+.gg-left,.gg-right{ display:flex; flex-direction:column; min-height:0; overflow:hidden; }
+
+/* 「镜」立绘台 */
+.gg-stage{ position:relative; padding:14px 14px 6px; display:flex; flex-direction:column; align-items:center; }
+#gg-avatar{ width:148px; height:148px; filter:drop-shadow(0 0 18px rgba(79,230,224,.35)); transition:filter .8s; }
+.gg-name{ margin-top:4px; font-size:15px; letter-spacing:.18em; color:var(--ink); }
+.gg-name .gg-sub{ font-size:9px; color:var(--ink-faint); letter-spacing:.12em; }
+
+/* 好感度条 */
+.gg-meter{ padding:6px 16px 12px; }
+.gg-meter-head{ display:flex; align-items:baseline; gap:6px; font-size:11px; color:var(--rose); letter-spacing:.1em; }
+.gg-meter-head b{ font-size:18px; color:var(--rose); margin-left:auto; font-weight:700; }
+.gg-affmax{ color:var(--ink-faint); font-size:10px; }
+.gg-bar{ margin-top:6px; height:10px; border-radius:6px; background:#0a0f17; border:1px solid var(--hair); overflow:hidden; position:relative; }
+.gg-bar-fill{ height:100%; width:25%; border-radius:6px;
+  background:linear-gradient(90deg,#34b0a9,var(--rose)); box-shadow:0 0 12px var(--rose-soft); transition:width .7s cubic-bezier(.2,.8,.2,1); }
+.gg-bar.crack{ animation:ggcrack .5s ease; } .gg-bar.crack .gg-bar-fill{ background:linear-gradient(90deg,#6b3a3a,#a33); }
+@keyframes ggcrack{ 0%,100%{transform:translateX(0)} 20%{transform:translateX(-4px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(2px)} }
+
+/* 存档树 */
+.gg-tree{ flex:1; min-height:0; overflow:auto; padding:6px 8px;
+  background:radial-gradient(520px 460px at 50% 90%, rgba(46,20,40,.4) 0%, transparent 70%); }
+.gg-tree svg{ width:100%; height:auto; display:block; }
+.gg-empty{ color:var(--ink-faint); font-size:12px; padding:24px 14px; line-height:1.7; }
+.gg-hint{ padding:7px 14px; font-size:10px; color:var(--ink-faint); border-top:1px solid var(--hair); line-height:1.5; }
+.gg-hint b{ color:var(--rose); }
+
+/* 对话流 */
+.gg-chat{ flex:1; min-height:0; overflow:auto; padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+.gg-msg{ max-width:80%; padding:9px 13px; font-size:13px; line-height:1.6; border-radius:12px; white-space:pre-wrap; word-break:break-word; animation:ggin .35s ease; }
+@keyframes ggin{ from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+.gg-msg.kagami{ align-self:flex-start; background:rgba(79,230,224,.07); border:1px solid rgba(79,230,224,.28); border-bottom-left-radius:3px; color:var(--ink); }
+.gg-msg.you{ align-self:flex-end; background:var(--rose-soft); border:1px solid rgba(255,126,182,.4); border-bottom-right-radius:3px; color:var(--ink); }
+.gg-msg .who{ display:block; font-size:9px; letter-spacing:.14em; margin-bottom:3px; }
+.gg-msg.kagami .who{ color:var(--phos); } .gg-msg.you .who{ color:var(--rose); }
+/* 内心 OS（玻璃盒照进她的心） */
+.gg-os{ align-self:flex-start; max-width:82%; font-size:11.5px; line-height:1.55; color:var(--ink-dim);
+  background:rgba(13,20,30,.6); border:1px dashed rgba(79,230,224,.3); border-radius:8px; padding:7px 11px; }
+.gg-os::before{ content:'💭 镜的内心 OS'; display:block; font-size:9px; letter-spacing:.12em; color:var(--phos); margin-bottom:3px; }
+/* 好感度变化徽章 */
+.gg-delta{ align-self:center; font-size:11px; letter-spacing:.06em; padding:3px 12px; border-radius:20px; }
+.gg-delta.up{ color:var(--rose); background:var(--rose-soft); border:1px solid rgba(255,126,182,.4); }
+.gg-delta.down{ color:#ff9a9a; background:rgba(200,60,60,.12); border:1px solid rgba(200,60,60,.4); }
+.gg-delta.zero{ color:var(--ink-faint); border:1px solid var(--hair); }
+.gg-sys{ align-self:center; font-size:10px; color:var(--ink-faint); letter-spacing:.08em; }
+
+/* 结局态 */
+.gg-ending{ margin:0 16px 10px; padding:14px 16px; border-radius:10px; text-align:center; animation:ggin .5s ease; }
+.gg-ending.good{ background:linear-gradient(180deg,rgba(255,126,182,.14),rgba(255,210,126,.08)); border:1px solid var(--rose); color:var(--ink); box-shadow:0 0 24px var(--rose-soft); }
+.gg-ending.bad{ background:rgba(40,16,24,.6); border:1px solid rgba(160,60,80,.5); color:var(--ink-dim); }
+.gg-ending h3{ margin:0 0 6px; font-size:15px; letter-spacing:.1em; }
+.gg-ending.good h3{ color:var(--rose); } .gg-ending.bad h3{ color:#ff9a9a; }
+.gg-ending p{ margin:0; font-size:12px; line-height:1.6; }
+
+/* 输入 */
+.gg-input{ display:flex; align-items:center; gap:10px; padding:11px 14px; border-top:1px solid var(--hair); background:var(--panel); }
+.gg-input input{ flex:1; background:#04070d; border:1px solid var(--hair-2); border-radius:4px; color:var(--ink); font-family:var(--mono); font-size:13px; padding:10px 13px; outline:0; }
+.gg-input input:focus{ border-color:var(--rose); box-shadow:0 0 14px var(--rose-soft); }
+.gg-input button{ background:rgba(79,230,224,.06); border:1px solid var(--phos); color:var(--phos); font-family:var(--mono); font-size:12px; letter-spacing:.08em; padding:9px 16px; border-radius:3px; cursor:pointer; white-space:nowrap; }
+.gg-newbtn{ border-color:var(--rose)!important; color:var(--rose)!important; background:var(--rose-soft)!important; }
+.gg-newbtn:hover{ box-shadow:0 0 12px var(--rose-soft); }

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>世界树 · 生长版</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{ --phos:#4fe6e0; --amber:#f2b24a; --red:#ff6b6b; --green:#7ef0b0; --ink:#e6edf3; --dim:#9fb0c3; --faint:#5f7088; }
+  *{ box-sizing:border-box; } html,body{ height:100%; }
+  body{ margin:0; background:radial-gradient(1000px 820px at 50% 90%, #0e1a22 0%, #081019 45%, #04070d 100%);
+    color:var(--ink); font-family:"JetBrains Mono",monospace; overflow:hidden; }
+  .hud{ position:fixed; top:18px; left:24px; z-index:5; }
+  .hud h1{ font-size:15px; letter-spacing:.24em; color:var(--phos); margin:0; text-shadow:0 0 16px rgba(79,230,224,.6); }
+  .hud .s{ font-size:11px; color:var(--dim); margin-top:6px; }
+  .legend{ position:fixed; bottom:16px; left:24px; z-index:5; font-size:11px; color:var(--dim); display:flex; gap:18px; }
+  .legend i{ width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px;box-shadow:0 0 9px currentColor; }
+  .wrap{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+  svg{ width:min(1040px,95vw); height:auto; }
+
+  #crown{ animation:sway 8s ease-in-out infinite; transform-box:view-box; transform-origin:50% 78%; }
+  @keyframes sway{ 0%,100%{ transform:rotate(-.7deg) } 50%{ transform:rotate(.7deg) } }
+
+  .limb{ fill:none; stroke-linecap:round; stroke-linejoin:round; filter:url(#soft); }
+  .twig{ fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .root{ fill:none; stroke-linecap:round; opacity:.55; }
+  .sap{ fill:none; stroke-linecap:round; stroke-width:2.2; stroke-dasharray:10 130; filter:url(#glow); animation:flow 2.8s linear infinite; }
+  @keyframes flow{ to{ stroke-dashoffset:-280; } }
+  .s-cyan{ stroke:var(--phos);} .s-red{ stroke:var(--red);} .s-green{ stroke:var(--green);}
+
+  .halo{ animation:pulse 3s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  @keyframes pulse{ 0%,100%{ opacity:.22; transform:scale(.8);} 50%{ opacity:.65; transform:scale(1.55);} }
+  .node{ filter:url(#glow); }
+  .fork .halo{ animation-duration:2s; } .win .halo{ animation-duration:1.5s; }
+  .bad .halo{ animation:flick 1.2s steps(2) infinite; }
+  @keyframes flick{ 0%,100%{opacity:.6} 50%{opacity:.15} }
+  .lbl{ font-size:12px; fill:var(--dim); } .lbl.hot{fill:var(--amber);} .lbl.bad{fill:#ffb0b0;} .lbl.win{fill:var(--green);}
+  .leaf{ animation:breathe 3.6s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  .leaf:nth-child(2n){ animation-duration:4.4s; } .leaf:nth-child(3n){ animation-duration:5s; }
+  @keyframes breathe{ 0%,100%{opacity:.4; transform:scale(.85)} 50%{opacity:.95; transform:scale(1.12)} }
+</style>
+</head>
+<body>
+  <div class="hud">
+    <h1>世界树 · YGGDRASIL</h1>
+    <div class="s">根在下、往上长 · 发光果实=checkpoint · 爬上去接着说（中间节点说＝长出新枝）· 登顶=好感满通关</div>
+  </div>
+
+  <div class="wrap">
+  <svg viewBox="0 0 960 620" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="1.1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <radialGradient id="gc"><stop offset="0%" stop-color="#cffaf7"/><stop offset="100%" stop-color="#4fe6e0"/></radialGradient>
+      <radialGradient id="ga"><stop offset="0%" stop-color="#ffe7b8"/><stop offset="100%" stop-color="#f2b24a"/></radialGradient>
+      <radialGradient id="gr"><stop offset="0%" stop-color="#ffcccc"/><stop offset="100%" stop-color="#ff6b6b"/></radialGradient>
+      <radialGradient id="gg"><stop offset="0%" stop-color="#d6ffe9"/><stop offset="100%" stop-color="#7ef0b0"/></radialGradient>
+      <linearGradient id="barkC" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#2e524a"/><stop offset="100%" stop-color="#1c3a38"/></linearGradient>
+      <linearGradient id="barkG" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#244a3a"/><stop offset="100%" stop-color="#2f5a44"/></linearGradient>
+      <linearGradient id="barkR" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#3a2a2c"/><stop offset="100%" stop-color="#4a2e30"/></linearGradient>
+    </defs>
+
+    <ellipse cx="470" cy="588" rx="180" ry="30" fill="#10322c" opacity=".45" filter="url(#glow)"/>
+
+    <!-- ===== 树根（向下扎，渐细） ===== -->
+    <g class="root" stroke="url(#barkC)">
+      <path style="stroke-width:9" d="M470,560 C436,576 392,582 350,604"/>
+      <path style="stroke-width:5" d="M350,604 C336,612 320,614 304,624"/>
+      <path style="stroke-width:8" d="M470,560 C452,580 436,590 416,612"/>
+      <path style="stroke-width:9" d="M470,560 C508,576 556,582 600,604"/>
+      <path style="stroke-width:5" d="M600,604 C616,612 632,614 650,624"/>
+      <path style="stroke-width:7" d="M470,560 C486,582 502,592 520,614"/>
+    </g>
+
+    <g id="crown">
+      <!-- ===== 主枝桠（多段渐细=锥度） ===== -->
+      <!-- 树干 cp0->cp1 -->
+      <g class="limb" stroke="url(#barkC)">
+        <path style="stroke-width:24" d="M470,560 C472,520 470,490 470,460"/>
+        <path style="stroke-width:20" d="M470,460 C470,440 469,425 470,410"/>
+      </g>
+      <!-- 中央主线 cp1->cp2 -->
+      <g class="limb" stroke="url(#barkC)">
+        <path style="stroke-width:12" d="M470,410 C470,372 469,338 470,308"/>
+        <path style="stroke-width:8" d="M470,308 C470,288 469,275 470,262"/>
+      </g>
+      <!-- 左枝(枯/红)：渐细 + 下垂感 -->
+      <g class="limb" stroke="url(#barkR)">
+        <path style="stroke-width:13" d="M470,410 C428,392 340,382 290,335"/>
+        <path style="stroke-width:8.5" d="M290,335 C262,312 240,288 222,260"/>
+        <path style="stroke-width:5" d="M222,260 C208,232 198,206 192,180"/>
+      </g>
+      <!-- 右枝(茂/绿)：向上伸展、渐细 -->
+      <g class="limb" stroke="url(#barkG)">
+        <path style="stroke-width:16" d="M470,410 C546,392 632,360 678,312"/>
+        <path style="stroke-width:11.5" d="M678,312 C710,282 726,254 738,226"/>
+        <path style="stroke-width:8" d="M738,226 C752,198 762,170 770,142"/>
+        <path style="stroke-width:5" d="M770,142 C776,118 782,98 788,78"/>
+      </g>
+
+      <!-- ===== 小枝桠 twig（分形感，渐细到梢） ===== -->
+      <g class="twig" filter="url(#soft)">
+        <!-- 绿枝上的小枝 -->
+        <path stroke="url(#barkG)" style="stroke-width:4.5" d="M678,312 C648,300 624,278 620,246"/>
+        <path stroke="url(#barkG)" style="stroke-width:2.6" d="M620,246 C612,228 614,212 606,196"/>
+        <path stroke="url(#barkG)" style="stroke-width:4" d="M738,226 C766,224 788,206 798,180"/>
+        <path stroke="url(#barkG)" style="stroke-width:2.4" d="M798,180 C812,178 824,168 828,150"/>
+        <path stroke="url(#barkG)" style="stroke-width:3.4" d="M770,142 C748,132 730,134 712,118"/>
+        <path stroke="url(#barkG)" style="stroke-width:3.2" d="M788,78 C812,74 832,80 848,66"/>
+        <path stroke="url(#barkG)" style="stroke-width:2.6" d="M678,312 C700,296 700,272 716,256"/>
+        <!-- 树干/中央的小枝 -->
+        <path stroke="url(#barkC)" style="stroke-width:3.6" d="M470,308 C500,300 520,282 524,256"/>
+        <path stroke="url(#barkC)" style="stroke-width:3" d="M470,262 C446,252 432,256 416,242"/>
+        <path stroke="url(#barkC)" style="stroke-width:3.2" d="M470,460 C440,452 420,436 416,412"/>
+        <!-- 枯枝上的稀疏小枝 -->
+        <path stroke="url(#barkR)" style="stroke-width:3" opacity=".5" d="M290,335 C312,316 318,294 312,268"/>
+        <path stroke="url(#barkR)" style="stroke-width:2.4" opacity=".4" d="M222,260 C204,244 192,246 176,232"/>
+      </g>
+
+      <!-- ===== 树汁流光 ===== -->
+      <path id="sTrunk" class="sap s-cyan" d="M470,560 C472,520 470,490 470,460 C470,440 469,425 470,410 C470,372 469,338 470,308 C470,288 469,275 470,262"/>
+      <path id="sRed" class="sap s-red" style="animation-delay:.6s" d="M470,410 C428,392 340,382 290,335 C262,312 240,288 222,260 C208,232 198,206 192,180"/>
+      <path id="sGreen" class="sap s-green" style="animation-delay:1.1s" d="M470,410 C546,392 632,360 678,312 C710,282 726,254 738,226 C752,198 762,170 770,142 C776,118 782,98 788,78"/>
+      <circle r="3.6" fill="url(#gc)" filter="url(#glow)"><animateMotion dur="3s" repeatCount="indefinite"><mpath href="#sTrunk"/></animateMotion></circle>
+      <circle r="3.2" fill="url(#gr)" filter="url(#glow)"><animateMotion dur="3.4s" repeatCount="indefinite"><mpath href="#sRed"/></animateMotion></circle>
+      <circle r="4" fill="url(#gg)" filter="url(#glow)"><animateMotion dur="3.2s" repeatCount="indefinite"><mpath href="#sGreen"/></animateMotion></circle>
+
+      <!-- ===== 树梢叶簇（canopy） ===== -->
+      <g fill="url(#gg)" filter="url(#soft)">
+        <circle class="leaf" cx="606" cy="196" r="3"/><circle class="leaf" cx="828" cy="150" r="2.8"/><circle class="leaf" cx="848" cy="66" r="2.6"/>
+        <circle class="leaf" cx="712" cy="118" r="2.6"/><circle class="leaf" cx="716" cy="256" r="2.6"/><circle class="leaf" cx="524" cy="256" r="2.4"/>
+        <circle class="leaf" cx="798" cy="180" r="2.4"/><circle class="leaf" cx="788" cy="100" r="3"/><circle class="leaf" cx="760" cy="158" r="2.4"/>
+        <circle class="leaf" cx="640" cy="222" r="2.2"/><circle class="leaf" cx="822" cy="120" r="2.2"/><circle class="leaf" cx="700" cy="200" r="2.2"/>
+      </g>
+
+      <!-- ===== 果实节点 ===== -->
+      <g class="node"><circle class="halo" cx="470" cy="560" r="11" fill="var(--phos)"/><circle cx="470" cy="560" r="7" fill="url(#gc)"/></g>
+      <text class="lbl" x="490" y="564">cp0 · 开场白（根）</text>
+      <g class="node fork"><circle class="halo" cx="470" cy="410" r="14" fill="var(--amber)"/><circle cx="470" cy="410" r="8.5" fill="url(#ga)"/></g>
+      <text class="lbl hot" x="492" y="414">cp1 · 聊第一句 ◇分叉</text>
+      <g class="node"><circle class="halo" cx="470" cy="262" r="10" fill="var(--phos)"/><circle cx="470" cy="262" r="6.5" fill="url(#gc)"/></g>
+      <text class="lbl" x="490" y="266">cp2 · 主线继续…</text>
+      <g class="node"><circle class="halo" cx="290" cy="335" r="9" fill="var(--phos)"/><circle cx="290" cy="335" r="6" fill="url(#gc)"/></g>
+      <text class="lbl" x="196" y="332">cp3 · 换个话题</text>
+      <g class="node bad"><circle class="halo" cx="192" cy="180" r="13" fill="var(--red)"/><circle cx="192" cy="180" r="8" fill="url(#gr)"/></g>
+      <text class="lbl bad" x="66" y="184">cp4 · ⚠ 踩红线枯死</text>
+      <g class="node"><circle class="halo" cx="678" cy="312" r="10" fill="var(--phos)"/><circle cx="678" cy="312" r="6.5" fill="url(#gc)"/></g>
+      <text class="lbl" x="698" y="316">cp5 · 夸她的画</text>
+      <g class="node"><circle class="halo" cx="738" cy="226" r="10" fill="var(--phos)"/><circle cx="738" cy="226" r="6.5" fill="url(#gc)"/></g>
+      <text class="lbl" x="758" y="230">cp6 · 约她周末</text>
+      <g class="node win"><circle class="halo" cx="788" cy="78" r="16" fill="var(--green)"/><circle cx="788" cy="78" r="9.5" fill="url(#gg)"/></g>
+      <text class="lbl win" x="626" y="66">🏆 好感满 · 登顶通关</text>
+    </g>
+  </svg>
+  </div>
+
+  <div class="legend">
+    <span style="color:var(--phos)"><i></i>果实节点</span>
+    <span style="color:var(--amber)"><i></i>分叉点</span>
+    <span style="color:var(--red)"><i></i>枯枝 BROKEN</span>
+    <span style="color:var(--green)"><i></i>登顶通关</span>
+  </div>
+</body>
+</html>

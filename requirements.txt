@@ -1,0 +1,12 @@
+# 思镜 MindScope — 依赖
+# ⚠️ 依赖红线：禁任何高层 agent 框架 ——
+#   LangChain / LlamaIndex / LangGraph / AutoGen / CrewAI / Semantic Kernel 等一律不引入。
+#   openai SDK 仅作 HTTP 客户端指向 DeepSeek 端点，不属于 agent 框架。
+openai>=1.30
+fastapi>=0.110
+uvicorn>=0.29
+requests>=2.31
+matplotlib>=3.8
+pytest>=8.0
+ruff>=0.4
+playwright>=1.44

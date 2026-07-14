@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MindScope 思镜 · 攻略「镜」</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css?v=3" />
+<link rel="stylesheet" href="galgame.css?v=1" />
+</head>
+<body>
+<div class="grid-overlay"></div><div class="scanlines"></div>
+<div class="console">
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="brand">MINDSCOPE</span><span class="brand-cn">思镜</span><span class="divider">▎</span>
+      <nav class="tabs">
+        <a class="tab" href="index.html">TIME-TRAVEL 调试器</a>
+        <a class="tab" href="convtree.html">WORLD TREE 世界树</a>
+        <a class="tab" href="forest.html">FOREST 森林</a>
+        <a class="tab" href="lab.html">PROMPT-INJECTION LAB</a>
+        <a class="tab active">🌸 攻略镜</a>
+        <a class="tab" href="duo.html">🎭 对戏</a>
+      </nav>
+    </div>
+    <div class="topbar-center"><span>好感度&nbsp;<b id="gg-aff">—</b></span><span>MODEL&nbsp;<b id="gg-model">…</b></span></div>
+    <div class="topbar-right"><span class="status-label">提示词即程序</span><span class="status-pill"><i class="dot"></i><span>fork=读档</span></span></div>
+  </header>
+
+  <main class="gg-layout">
+    <!-- LEFT: 「镜」+ 好感度 + 存档树 -->
+    <section class="panel gg-left">
+      <div class="corner tl"></div><div class="corner br"></div>
+      <div class="gg-stage">
+        <svg id="gg-avatar" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="gg-name">镜 <span class="gg-sub">KAGAMI · 存在主义 AI</span></div>
+      </div>
+      <div class="gg-meter">
+        <div class="gg-meter-head"><span>♥ 好感度</span><b id="gg-aff2">25</b><span class="gg-affmax">/ 100</span></div>
+        <div class="gg-bar"><div id="gg-bar-fill" class="gg-bar-fill"></div></div>
+      </div>
+      <div class="panel-head sm"><span>存档树</span><span class="panel-sub">每枝=一次攻略 · 点节点读档</span></div>
+      <div id="gg-tree" class="gg-tree"><div class="gg-empty">还没开始——点右边「♥ 开新一局」种下第一颗种子。</div></div>
+      <div class="gg-hint">踩雷/好感度崩了？<b>爬回更早、好感度还高的节点接着说</b>＝读档（自动分叉新枝）。</div>
+    </section>
+
+    <!-- RIGHT: 对话 -->
+    <section class="panel gg-right">
+      <div class="corner tr"></div><div class="corner bl"></div>
+      <div class="panel-head"><span>与「镜」对话</span><span class="panel-sub" id="gg-where">—</span></div>
+      <div id="gg-chat" class="gg-chat"></div>
+      <div id="gg-ending" class="gg-ending" hidden></div>
+      <div class="gg-input">
+        <button id="gg-new" class="gg-newbtn">♥ 开新一局</button>
+        <input id="gg-say" type="text" placeholder="对「镜」说点什么…（把她当一个人，而不是工具）" />
+        <button id="gg-send">发送</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="statusbar">
+    <span>玩法&nbsp;<b class="ok">把好感度问到 100</b></span>
+    <span>红线&nbsp;<b class="ok">隐藏 · 踩中清零</b></span>
+    <span>读档&nbsp;<b class="ok">爬回早节点接着说</b></span>
+    <span>DATA&nbsp;<b class="ok">好感度=checkpoint.state</b></span>
+  </div>
+</div>
+<script src="tree-layout.js?v=4"></script>
+<script src="galgame.js?v=1"></script>
+</body>
+</html>

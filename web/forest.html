@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MindScope 思镜 · 森林（所有会话）</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css?v=3" />
+<style>
+  .forest-head{ padding:14px 20px 4px; }
+  .forest-head h2{ margin:0; font-size:15px; letter-spacing:.18em; color:var(--phos); text-shadow:0 0 14px rgba(79,230,224,.4); }
+  .forest-head .s{ font-size:11px; color:var(--dim); margin-top:5px; }
+  .forest{ flex:1; min-height:0; overflow:auto; padding:14px 20px 20px;
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:16px; align-content:start; }
+  .seed{ background:linear-gradient(180deg,var(--panel-2),var(--panel)); border:1px solid var(--hair); border-radius:8px;
+    padding:10px; cursor:pointer; transition:.18s; position:relative; overflow:hidden;
+    display:flex; flex-direction:column; min-height:178px;
+    background-image:radial-gradient(360px 240px at 50% 96%, rgba(20,46,40,.4) 0%, transparent 70%); }
+  .seed:hover{ border-color:var(--phos); box-shadow:0 0 22px rgba(79,230,224,.18); transform:translateY(-3px); }
+  .seed.active{ border-color:var(--phos); }
+  .seed svg{ width:100%; height:128px; display:block; flex:0 0 128px; }
+  .seed .name{ font-size:12.5px; color:var(--ink); margin-top:4px; }
+  .seed .meta{ font-size:10px; color:var(--ink-faint); margin-top:3px; letter-spacing:.03em; }
+  .seed .badge{ position:absolute; top:9px; right:10px; font-size:9px; color:var(--phos); border:1px solid rgba(79,230,224,.4);
+    border-radius:2px; padding:1px 6px; background:rgba(79,230,224,.06); }
+  /* 色调变体（基础是青，hue-rotate 偏移） */
+  .h-cyan{} .h-green{ filter:hue-rotate(35deg);} .h-amber{ filter:hue-rotate(120deg);} .h-violet{ filter:hue-rotate(-70deg);} .h-rose{ filter:hue-rotate(150deg);}
+  .new-seed{ display:flex; align-items:center; justify-content:center; border-style:dashed; color:var(--dim); min-height:178px; font-size:13px; }
+  .new-seed:hover{ color:var(--phos); }
+  /* 小树内部 */
+  .lf{ fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .sap{ fill:none; stroke:#4fe6e0; stroke-width:1.5; stroke-dasharray:6 90; filter:url(#mg); animation:flow 3s linear infinite; }
+  @keyframes flow{ to{ stroke-dashoffset:-192; } }
+  .nd{ filter:url(#mg); } .pl{ animation:pulse 3.2s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  @keyframes pulse{ 0%,100%{opacity:.25;transform:scale(.85)} 50%{opacity:.6;transform:scale(1.45)} }
+</style>
+</head>
+<body>
+<div class="grid-overlay"></div><div class="scanlines"></div>
+<div class="console">
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="brand">MINDSCOPE</span><span class="brand-cn">思镜</span><span class="divider">▎</span>
+      <nav class="tabs">
+        <a class="tab" href="index.html">TIME-TRAVEL 调试器</a>
+        <a class="tab" href="convtree.html">WORLD TREE 世界树</a>
+        <a class="tab active">FOREST 森林</a>
+        <a class="tab" href="lab.html">PROMPT-INJECTION LAB</a>
+        <a class="tab" href="galgame.html">🌸 攻略镜</a>
+        <a class="tab" href="duo.html">🎭 对戏</a>
+      </nav>
+    </div>
+    <div class="topbar-center"><span>会话&nbsp;<b id="f-count">…</b></span><span>总分支&nbsp;<b id="f-branches">…</b></span></div>
+    <div class="topbar-right"><span class="status-label">YOUR FOREST</span><span class="status-pill"><i class="dot"></i><span>思维森林</span></span></div>
+  </header>
+
+  <div class="forest-head">
+    <h2>森林 · 你的所有会话</h2>
+    <div class="s">每一棵世界树 = 一个会话（它自己的分支、回退、走过的路都在树里）· 点一棵进入 · 会话越多，森林越茂</div>
+  </div>
+
+  <main class="forest">
+    <svg width="0" height="0" style="position:absolute"><defs>
+      <filter id="mg" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <radialGradient id="mgc" cx="36%" cy="30%" r="72%"><stop offset="0%" stop-color="#d8fbf8"/><stop offset="42%" stop-color="#34b0a9"/><stop offset="100%" stop-color="#093230"/></radialGradient>
+      <radialGradient id="mga" cx="36%" cy="30%" r="72%"><stop offset="0%" stop-color="#ffeec2"/><stop offset="42%" stop-color="#d6962a"/><stop offset="100%" stop-color="#3f2806"/></radialGradient>
+      <linearGradient id="mbk" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#33564d"/><stop offset="100%" stop-color="#1b3836"/></linearGradient>
+
+      <!-- 大树（多分支，长会话） -->
+      <symbol id="tBig" viewBox="0 0 200 150">
+        <g class="lf" stroke="url(#mbk)" filter="url(#mg)">
+          <path style="stroke-width:6" d="M100,144 C102,120 100,106 100,92"/>
+          <path style="stroke-width:3.6" d="M100,92 C100,72 99,58 100,42"/>
+          <path style="stroke-width:4.4" d="M100,100 C74,90 52,74 42,48"/>
+          <path style="stroke-width:2.4" d="M42,48 C32,34 26,24 22,12"/>
+          <path style="stroke-width:5" d="M100,94 C128,84 152,66 162,40"/>
+          <path style="stroke-width:2.8" d="M162,40 C172,28 180,22 186,10"/>
+          <path style="stroke-width:2.6" d="M100,94 C122,88 132,72 136,52"/>
+        </g>
+        <path class="sap" d="M100,144 C102,120 100,106 100,94 C128,84 152,66 162,40 C172,28 180,22 186,10"/>
+        <g class="nd">
+          <g class="pl"><circle cx="100" cy="144" r="5" fill="#4fe6e0"/></g><circle cx="100" cy="144" r="4" fill="url(#mgc)"/>
+          <g class="pl"><circle cx="100" cy="92" r="6" fill="#f2b24a"/></g><circle cx="100" cy="92" r="4.5" fill="url(#mga)"/>
+          <circle cx="100" cy="42" r="3.6" fill="url(#mgc)"/><circle cx="42" cy="48" r="3.6" fill="url(#mgc)"/>
+          <circle cx="22" cy="12" r="3.4" fill="url(#mgc)"/><circle cx="162" cy="40" r="3.6" fill="url(#mgc)"/>
+          <circle cx="186" cy="10" r="4" fill="url(#mgc)"/><circle cx="136" cy="52" r="3.2" fill="url(#mgc)"/>
+        </g>
+      </symbol>
+      <!-- 中树（2 分支） -->
+      <symbol id="tMid" viewBox="0 0 200 150">
+        <g class="lf" stroke="url(#mbk)" filter="url(#mg)">
+          <path style="stroke-width:6" d="M100,144 C102,116 100,100 100,86"/>
+          <path style="stroke-width:4" d="M100,86 C80,76 62,58 56,32"/>
+          <path style="stroke-width:4.4" d="M100,88 C122,78 142,60 150,34"/>
+          <path style="stroke-width:2.4" d="M150,34 C158,22 166,16 170,6"/>
+        </g>
+        <path class="sap" d="M100,144 C102,116 100,88 100,88 C122,78 142,60 150,34 C158,22 166,16 170,6"/>
+        <g class="nd">
+          <g class="pl"><circle cx="100" cy="144" r="5" fill="#4fe6e0"/></g><circle cx="100" cy="144" r="4" fill="url(#mgc)"/>
+          <g class="pl"><circle cx="100" cy="86" r="6" fill="#f2b24a"/></g><circle cx="100" cy="86" r="4.5" fill="url(#mga)"/>
+          <circle cx="56" cy="32" r="3.6" fill="url(#mgc)"/><circle cx="150" cy="34" r="3.6" fill="url(#mgc)"/>
+          <circle cx="170" cy="6" r="4" fill="url(#mgc)"/>
+        </g>
+      </symbol>
+      <!-- 小苗（短会话，1 枝） -->
+      <symbol id="tSmall" viewBox="0 0 200 150">
+        <g class="lf" stroke="url(#mbk)" filter="url(#mg)">
+          <path style="stroke-width:5.5" d="M100,144 C102,116 100,98 100,82"/>
+          <path style="stroke-width:3.6" d="M100,82 C108,64 116,50 124,32"/>
+        </g>
+        <path class="sap" d="M100,144 C102,116 100,82 100,82 C108,64 116,50 124,32"/>
+        <g class="nd">
+          <g class="pl"><circle cx="100" cy="144" r="5" fill="#4fe6e0"/></g><circle cx="100" cy="144" r="4" fill="url(#mgc)"/>
+          <circle cx="100" cy="82" r="4.2" fill="url(#mgc)"/><circle cx="124" cy="32" r="4" fill="url(#mgc)"/>
+        </g>
+      </symbol>
+    </defs></svg>
+
+    <!-- 会话卡由 forest.js 从 /api/sessions 填充 -->
+  </main>
+
+  <div class="statusbar">
+    <span>VIEW&nbsp;<b class="ok">森林 / Forest</b></span>
+    <span>每会话&nbsp;<b class="ok">一棵世界树</b></span>
+    <span>点一棵&nbsp;<b class="ok">进入对话世界树</b></span>
+    <span>DATA&nbsp;<b class="ok">真实 /api/sessions</b></span>
+  </div>
+</div>
+<script src="forest.js?v=1"></script>
+</body>
+</html>
